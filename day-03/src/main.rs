@@ -2,7 +2,10 @@ use std::{collections::BTreeSet, convert::Infallible, str::FromStr};
 
 type Result<T, E = Infallible> = std::result::Result<T, E>;
 
+#[derive(Copy, Clone)]
 struct Right(usize);
+
+#[derive(Copy, Clone)]
 struct Down(usize);
 
 type Coord = (usize, usize);
@@ -13,6 +16,14 @@ struct Map {
 }
 
 impl Map {
+    const SLOPES: &'static [(Right, Down)] = &[
+        (Right(1), Down(1)),
+        (Right(3), Down(1)),
+        (Right(5), Down(1)),
+        (Right(7), Down(1)),
+        (Right(1), Down(2)),
+    ];
+
     fn intersections(&self, right: Right, down: Down) -> usize {
         let mut x = 0;
         let mut intersections = 0;
@@ -26,6 +37,13 @@ impl Map {
         }
 
         intersections
+    }
+
+    fn intersection_product(&self) -> usize {
+        Self::SLOPES
+            .iter()
+            .map(|&(right, down)| self.intersections(right, down))
+            .product()
     }
 }
 
@@ -62,6 +80,7 @@ fn main() -> Result<()> {
     let input = include_str!("../input.txt");
     let m = Map::from_str(input)?;
     println!("{}", m.intersections(Right(3), Down(1)));
+    println!("{}", m.intersection_product());
     Ok(())
 }
 
@@ -85,6 +104,12 @@ mod test {
     fn demo() -> Result<()> {
         let m = Map::from_str(TEST_INPUT)?;
         assert_eq!(m.intersections(Right(3), Down(1)), 7);
+        Ok(())
+    }
+
+    fn demo_product() -> Result<()> {
+        let m = Map::from_str(TEST_INPUT)?;
+        assert_eq!(m.intersection_product(), 336);
         Ok(())
     }
 }
