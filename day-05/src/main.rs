@@ -1,5 +1,5 @@
 use snafu::{ensure, Snafu};
-use std::{cell::RefCell, str::FromStr};
+use std::{cell::RefCell, collections::BTreeSet, str::FromStr};
 
 #[derive(Debug, Snafu)]
 enum PassError {
@@ -158,13 +158,34 @@ impl FromStr for Col {
 
 fn main() -> Result<(), PassError> {
     let passes = include_str!("../input.txt");
+    let passes: Vec<Pass> = passes
+        .lines()
+        .map(str::trim)
+        .map(str::parse)
+        .collect::<Result<_, _>>()?;
 
-    let a1 = itertools::process_results(passes.lines().map(str::trim).map(Pass::from_str), |ps| {
-        ps.map(|p| p.id()).max()
-    })?;
+    let a1 = passes.iter().map(|p| p.id()).max();
 
     println!("{:?}", a1);
     assert_eq!(a1, Some(906));
+
+    let ids: BTreeSet<_> = passes.iter().map(|p| p.id()).collect();
+
+    let a2 = ids
+        .iter()
+        .filter_map(|i| {
+            let next1 = i + 1;
+            let next2 = i + 2;
+            if !ids.contains(&next1) && ids.contains(&next2) {
+                Some(next1)
+            } else {
+                None
+            }
+        })
+        .next();
+
+    println!("{:?}", a2);
+    assert_eq!(a2, Some(519));
 
     Ok(())
 }
